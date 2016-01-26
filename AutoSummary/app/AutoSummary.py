@@ -48,23 +48,24 @@ setup_SqlLite_DB()
 @app.route('/')
 def hello_world():
         return '<pre>' \
-	   '\nThis is a web service for summarizing a collection of peer-review sentences.'\
-	   '\nIt uses sumy library which support 7 different algorithms to extract the most important sentences in a text corpus.'\
-	   '\nUsage: ' \
-           '\n	1. POST each comment to /assignment/[aid]/rubric/[rid]/comments' \
-           '\n	Input example : {"comments":[ ' \
-	   '\n  			{"reviewer":"01","content":"abcd"},' \
-           '\n				{"reviewer":"02","content":"sssss"}' \
-	   '\n			]}' \
-           '\n	2. Then to retrieve the summary using Text-Rank Algorithm: GET /assignment/[aid]/rubric/[rid]/comments/summary' \
-           '\n	3. To change the length of the summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]' \
-           '\n	4. To change the algorithm and length of summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]/[algorithm]' \
-           '\n	5. To get a direct summary from an input POST to /summary the following input example: ' \
-           '\n		{ "length":5, "algorithm":"TextRank", "sentences":[' \
-	   '\n			{"sentence":"sentence 1"}, ' \
-	   '\n			{"sentence":"sentence 2"},' \
-	   '\n		]}' \
-	   '\n</pre>'
+	    '\nThis is a web service for summarizing a collection of peer-review sentences.'\
+	    '\nIt uses sumy library which support 7 different algorithms to extract the most important sentences in a text corpus.'\
+	    '\n   Usage: ' \
+        '\n	  1. POST each comment to /assignment/[aid]/rubric/[rid]/comments' \
+        '\n	    Input example : {"comments":[ ' \
+	    '\n  			{"reviewer":"01","content":"abcd"},' \
+        '\n				{"reviewer":"02","content":"sssss"}' \
+	    '\n			]}' \
+        '\n	  2. Then to retrieve the summary using Text-Rank Algorithm: GET /assignment/[aid]/rubric/[rid]/comments/summary' \
+        '\n	  3. To change the length of the summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]' \
+        '\n	  4. To change the algorithm and length of summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]/[algorithm]' \
+        '\n	        where algorithm one of these : textrank, lexrank, luhn, edmonson*, kl, lsa, sumbasic, random (* doesn\'t work yet)' \
+        '\n	  5. To get a direct summary from an input POST to /summary the following input example: ' \
+        '\n		    { "length":5, "algorithm":"TextRank", "sentences":[' \
+	    '\n			    {"sentence":"sentence 1"}, ' \
+	    '\n			    {"sentence":"sentence 2"},' \
+	    '\n		    ]}' \
+	    '\n</pre>'
 
 
 @app.route('/assignment/<aid>/rubric/<rid>/comments', methods=['POST'])
@@ -141,30 +142,32 @@ def get_summary_base(aid, rid, length=10, algorithm="TextRank"):
         return jsonify(Exception="Assignment ID and Rubric ID must be a number")
 
 def summarize(corpus, length, algorithm):
+    algorithm = algorithm.lower()
     try:
     	parser = PlaintextParser.from_string(corpus,Tokenizer(LANGUAGE))
-	if algorithm == "TextRank":
+	    if algorithm == "textrank":
         	summarizer = TextRankSummarizer(Stemmer(LANGUAGE))
-	elif algorithm == "LexRank":
+	    elif algorithm == "lexrank":
         	summarizer = LexRankSummarizer(Stemmer(LANGUAGE))
-	elif algorithm == "Luhn":
+	    elif algorithm == "luhn":
         	summarizer = LuhnSummarizer(Stemmer(LANGUAGE))
-	elif algorithm == "Edmundson":
+	    elif algorithm == "edmundson":
         	summarizer = EdmundsonSummarizer(Stemmer(LANGUAGE))
-	elif algorithm == "Kl":
+	    elif algorithm == "kl":
         	summarizer = KLSummarizer(Stemmer(LANGUAGE))
-	elif algorithm == "Lsa":
+	    elif algorithm == "lsa":
         	summarizer = LsaSummarizer(Stemmer(LANGUAGE))
-	elif algorithm == "SumBasic":
+	    elif algorithm == "sumbasic":
         	summarizer = SumBasicSummarizer(Stemmer(LANGUAGE))
-	elif algorithm == "Random":
+	    elif algorithm == "random":
         	summarizer = RandomSummarizer(Stemmer(LANGUAGE))
-	summarizer.stop_words = get_stop_words(LANGUAGE)
-	summary = " ".join([obj._text for obj in summarizer(parser.document, length)])
-    
+	    summarizer.stop_words = get_stop_words(LANGUAGE)
+	    summary = " ".join([obj._text for obj in summarizer(parser.document, length)])
+
     	return summary
+
     except Exception as e:
-	return "Error, check NLTK Data"
+    	return "Error, check NLTK or NLTK Data "
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3002)

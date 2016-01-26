@@ -153,8 +153,8 @@ def get_summary_base(aid, rid, length=10, algorithm="TextRank"):
         return jsonify(Exception="Assignment ID and Rubric ID must be a number")
 
 def summarize(corpus, length, algorithm):
-    global summarizer
-    summary = "No compatible summarizer was selected, please use one of these : : textrank, lexrank, luhn, edmonson*, kl, lsa, sumbasic, random (* doesn\'t work yet)"
+    summarizer = None
+    summary = "No compatible summarizer was selected, please use one of these : textrank, lexrank, luhn, edmonson*, kl, lsa, sumbasic, random (* doesn\'t work yet)"
     algorithm = algorithm.lower()
     try:
         parser = PlaintextParser.from_string(corpus,Tokenizer(LANGUAGE))

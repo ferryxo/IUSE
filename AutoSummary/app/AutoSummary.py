@@ -2,7 +2,6 @@ import sqlite3 as sqllite
 import sys
 
 from flask import Flask, request, jsonify
-from Assignment import Assignment
 
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
@@ -35,7 +34,13 @@ def setup_SqlLite_DB():
         global cur
         cur = con.cursor()
         #cur.execute('DROP TABLE IF EXISTS Comment')
-        sql = "CREATE TABLE IF NOT EXISTS Comment (id INTEGER PRIMARY KEY AUTOINCREMENT, assignment_id INTEGER, rubric_id INTEGER, reviewer_id INTEGER, grade FLOAT, content VARCHAR)"
+        sql = "CREATE TABLE IF NOT EXISTS Comment (" \
+              "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
+              "assignment_id INTEGER, " \
+              "rubric_id INTEGER, " \
+              "reviewer_id INTEGER, " \
+              "grade FLOAT, " \
+              "content VARCHAR)"
         cur.execute(sql)
         con.commit()
 
@@ -91,7 +96,10 @@ def add_comments(aid, rid):
 def get_comments(aid, rid):
     if aid.isdigit and rid.isdigit:
          if int(aid) >= 0 and int(rid) >= 0:
-            cur.execute("SELECT reviewer_id, grade, content FROM Comment WHERE assignment_id=" + aid + " AND rubric_id=" + rid)
+            sql = 'SELECT reviewer_id, grade, content ' \
+                  'FROM Comment ' \
+                  'WHERE assignment_id=' + aid + " AND rubric_id=" + rid
+            cur.execute(sql)
             row = cur.fetchall()
             if len(row) == 0 :
                 return jsonify(Comments="Empty")
@@ -122,19 +130,22 @@ def get_summary_generic():
         corpus =  ". ".join([ sentence["sentence"] for sentence in obj['sentences']])
         return jsonify(Summary=summarize(corpus, obj['length'], obj['algorithm']))
     except Exception as e:
-        return jsonify(Exception="The input format is incorrect. It should be {\"length\": 1, \"algorithm\":\"Lsa\", \"sentences\":[{\"sentence\":\"....\"}, {\"sentence\":\"....\"}] }")
+        return jsonify(Exception= str(e) + " Also check the input. It should be {\"length\": 1, \"algorithm\":\"Lsa\", \"sentences\":[{\"sentence\":\"....\"}, {\"sentence\":\"....\"}] }")
 
 def get_summary_base(aid, rid, length=10, algorithm="TextRank"):
     if aid.isdigit and rid.isdigit:
-         if int(aid) >= 0 and int(rid) >= 0:
-            cur.execute("SELECT reviewer_id, grade, content FROM Comment WHERE assignment_id=" + aid + " AND rubric_id=" + rid)
+        if int(aid) >= 0 and int(rid) >= 0:
+            sql = 'SELECT reviewer_id, grade, content ' \
+                  'FROM Comment ' \
+                  'WHERE assignment_id=' + aid + " AND rubric_id=" + rid
+            cur.execute(sql)
             row = cur.fetchall()
-	    if len(row) == 0 :
+            if len(row) == 0 :
                 return jsonify(Summary="Empty")
             else:
                 # comments= [{"reviewer":item[0], "grade":item[1], "content":item[2]} for item in row]
                 corpus = ". ".join([item[2] for item in row])
-		summary = summarize(corpus, length, algorithm)
+                summary = summarize(corpus, length, algorithm)
                 return jsonify(Summary=summary)
          else:
             return jsonify(Exception="Assignment ID and Rubric ID cannot be negative")
@@ -142,32 +153,36 @@ def get_summary_base(aid, rid, length=10, algorithm="TextRank"):
         return jsonify(Exception="Assignment ID and Rubric ID must be a number")
 
 def summarize(corpus, length, algorithm):
+    global summarizer
+    summary = "No compatible summarizer was selected, please use one of these : : textrank, lexrank, luhn, edmonson*, kl, lsa, sumbasic, random (* doesn\'t work yet)"
     algorithm = algorithm.lower()
     try:
-    	parser = PlaintextParser.from_string(corpus,Tokenizer(LANGUAGE))
-	    if algorithm == "textrank":
-        	summarizer = TextRankSummarizer(Stemmer(LANGUAGE))
-	    elif algorithm == "lexrank":
-        	summarizer = LexRankSummarizer(Stemmer(LANGUAGE))
-	    elif algorithm == "luhn":
-        	summarizer = LuhnSummarizer(Stemmer(LANGUAGE))
-	    elif algorithm == "edmundson":
-        	summarizer = EdmundsonSummarizer(Stemmer(LANGUAGE))
-	    elif algorithm == "kl":
-        	summarizer = KLSummarizer(Stemmer(LANGUAGE))
-	    elif algorithm == "lsa":
-        	summarizer = LsaSummarizer(Stemmer(LANGUAGE))
-	    elif algorithm == "sumbasic":
-        	summarizer = SumBasicSummarizer(Stemmer(LANGUAGE))
-	    elif algorithm == "random":
-        	summarizer = RandomSummarizer(Stemmer(LANGUAGE))
-	    summarizer.stop_words = get_stop_words(LANGUAGE)
-	    summary = " ".join([obj._text for obj in summarizer(parser.document, length)])
+        parser = PlaintextParser.from_string(corpus,Tokenizer(LANGUAGE))
+        if algorithm == "textrank":
+            summarizer = TextRankSummarizer(Stemmer(LANGUAGE))
+        elif algorithm == "lexrank":
+            summarizer = LexRankSummarizer(Stemmer(LANGUAGE))
+        elif algorithm == "luhn":
+            summarizer = LuhnSummarizer(Stemmer(LANGUAGE))
+        elif algorithm == "edmundson":
+            summarizer = EdmundsonSummarizer(Stemmer(LANGUAGE))
+        elif algorithm == "kl":
+            summarizer = KLSummarizer(Stemmer(LANGUAGE))
+        elif algorithm == "lsa":
+            summarizer = LsaSummarizer(Stemmer(LANGUAGE))
+        elif algorithm == "sumbasic":
+            summarizer = SumBasicSummarizer(Stemmer(LANGUAGE))
+        elif algorithm == "random":
+            summarizer = RandomSummarizer(Stemmer(LANGUAGE))
 
-    	return summary
+        if summarizer:
+            summarizer.stop_words = get_stop_words(LANGUAGE)
+            summary = " ".join([obj._text for obj in summarizer(parser.document, length)])
+
+        return summary
 
     except Exception as e:
-    	return "Error, check NLTK or NLTK Data "
+        return str(e)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3002)

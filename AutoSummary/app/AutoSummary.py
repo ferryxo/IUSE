@@ -39,7 +39,7 @@ def setup_SqlLite_DB():
         cur.execute(sql)
         con.commit()
 
-    except sqllite.Error, e:
+    except sqllite.Error, ep;
         print "Error %s:" % e.args[0]
         sys.exit(1)
 
@@ -47,7 +47,18 @@ setup_SqlLite_DB()
 
 @app.route('/')
 def hello_world():
-    return 'Hello World!'
+        return '<pre>Usage: ' \
+           '1. POST each comment to /assignment/[aid]/rubric/[rid]/comments' \
+           '   Input : {"comments":[ ' \
+	   '              {"reviewer":"01","content":"abcd"},' \
+           '              {"reviewer":"02","content":"sssss"}' \
+	   '            ]}' \
+           '2. Then to retrieve the summary using Text-Rank Algorithm: GET /assignment/[aid]/rubric/[rid]/comments/summary' \
+           '3. To change the length of the summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]' \
+           '4. To change the algorithm and length of summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]/[algorithm]' \
+           '5. To get a direct summary from an input POST to /summary the following input : ' \
+           '           { "length":5, "algorithm":"TextRank", "sentences":[{"sentence":"sentence 1"}, {"sentence":"sentence 2"},]}' \
+	   '</pre>'
 
 
 @app.route('/assignment/<aid>/rubric/<rid>/comments', methods=['POST'])
@@ -111,12 +122,12 @@ def get_summary_base(aid, rid, length=10, algorithm="TextRank"):
          if int(aid) >= 0 and int(rid) >= 0:
             cur.execute("SELECT reviewer_id, grade, content FROM Comment WHERE assignment_id=" + aid + " AND rubric_id=" + rid)
             row = cur.fetchall()
-            if len(row) == 0 :
+	    if len(row) == 0 :
                 return jsonify(Summary="Empty")
             else:
                 # comments= [{"reviewer":item[0], "grade":item[1], "content":item[2]} for item in row]
                 corpus = ". ".join([item[2] for item in row])
-                summary = summarize(corpus, length, algorithm)
+		summary = summarize(corpus, length, algorithm)
                 return jsonify(Summary=summary)
          else:
             return jsonify(Exception="Assignment ID and Rubric ID cannot be negative")
@@ -124,29 +135,31 @@ def get_summary_base(aid, rid, length=10, algorithm="TextRank"):
         return jsonify(Exception="Assignment ID and Rubric ID must be a number")
 
 def summarize(corpus, length, algorithm):
-    parser = PlaintextParser.from_string(corpus,Tokenizer(LANGUAGE))
-
-    if algorithm == "TextRank":
-        summarizer = TextRankSummarizer(Stemmer(LANGUAGE))
-    elif algorithm == "LexRank":
-        summarizer = LexRankSummarizer(Stemmer(LANGUAGE))
-    elif algorithm == "Luhn":
-        summarizer = LuhnSummarizer(Stemmer(LANGUAGE))
-    elif algorithm == "Edmundson":
-        summarizer = EdmundsonSummarizer(Stemmer(LANGUAGE))
-    elif algorithm == "Kl":
-        summarizer = KLSummarizer(Stemmer(LANGUAGE))
-    elif algorithm == "Lsa":
-        summarizer = LsaSummarizer(Stemmer(LANGUAGE))
-    elif algorithm == "SumBasic":
-        summarizer = SumBasicSummarizer(Stemmer(LANGUAGE))
-    elif algorithm == "Random":
-        summarizer = RandomSummarizer(Stemmer(LANGUAGE))
-
-    summarizer.stop_words = get_stop_words(LANGUAGE)
-    summary = " ".join([obj._text for obj in summarizer(parser.document, length)])
-
-    return summary
+    try:
+    	parser = PlaintextParser.from_string(corpus,Tokenizer(LANGUAGE))
+	if algorithm == "TextRank":
+        	summarizer = TextRankSummarizer(Stemmer(LANGUAGE))
+	elif algorithm == "LexRank":
+        	summarizer = LexRankSummarizer(Stemmer(LANGUAGE))
+	elif algorithm == "Luhn":
+        	summarizer = LuhnSummarizer(Stemmer(LANGUAGE))
+	elif algorithm == "Edmundson":
+        	summarizer = EdmundsonSummarizer(Stemmer(LANGUAGE))
+	elif algorithm == "Kl":
+        	summarizer = KLSummarizer(Stemmer(LANGUAGE))
+	elif algorithm == "Lsa":
+        	summarizer = LsaSummarizer(Stemmer(LANGUAGE))
+	elif algorithm == "SumBasic":
+        	summarizer = SumBasicSummarizer(Stemmer(LANGUAGE))
+	elif algorithm == "Random":
+        	summarizer = RandomSummarizer(Stemmer(LANGUAGE))
+	summarizer.stop_words = get_stop_words(LANGUAGE)
+	summary = " ".join([obj._text for obj in summarizer(parser.document, length)])
+    
+    	return summary
+    except Exception as e:
+	return "Error, check NLTK Data"
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=3002)
+

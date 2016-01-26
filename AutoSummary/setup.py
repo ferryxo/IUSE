@@ -9,5 +9,5 @@ setup(name='AutoSum',
       author_email='fferry@ncsu.edu',
       url='',
       packages=[],
-      install_requires = ['flask', 'sumy']
+      install_requires = ['Flask==0.10.1', 'Sumy==0.4.0']
      )

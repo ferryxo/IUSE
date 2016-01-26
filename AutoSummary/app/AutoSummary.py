@@ -39,7 +39,7 @@ def setup_SqlLite_DB():
         cur.execute(sql)
         con.commit()
 
-    except sqllite.Error, ep;
+    except sqllite.Error, e:
         print "Error %s:" % e.args[0]
         sys.exit(1)
 

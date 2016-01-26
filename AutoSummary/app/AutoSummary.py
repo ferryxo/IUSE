@@ -47,18 +47,24 @@ setup_SqlLite_DB()
 
 @app.route('/')
 def hello_world():
-        return '<pre>Usage: ' \
-           '1. POST each comment to /assignment/[aid]/rubric/[rid]/comments' \
-           '   Input : {"comments":[ ' \
-	   '              {"reviewer":"01","content":"abcd"},' \
-           '              {"reviewer":"02","content":"sssss"}' \
-	   '            ]}' \
-           '2. Then to retrieve the summary using Text-Rank Algorithm: GET /assignment/[aid]/rubric/[rid]/comments/summary' \
-           '3. To change the length of the summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]' \
-           '4. To change the algorithm and length of summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]/[algorithm]' \
-           '5. To get a direct summary from an input POST to /summary the following input : ' \
-           '           { "length":5, "algorithm":"TextRank", "sentences":[{"sentence":"sentence 1"}, {"sentence":"sentence 2"},]}' \
-	   '</pre>'
+        return '<pre>' \
+	   '\nThis is a web service for summarizing a collection of peer-review sentences.'\
+	   '\nIt uses sumy library which support 7 different algorithms to extract the most important sentences in a text corpus.'\
+	   '\nUsage: ' \
+           '\n	1. POST each comment to /assignment/[aid]/rubric/[rid]/comments' \
+           '\n	Input example : {"comments":[ ' \
+	   '\n  			{"reviewer":"01","content":"abcd"},' \
+           '\n				{"reviewer":"02","content":"sssss"}' \
+	   '\n			]}' \
+           '\n	2. Then to retrieve the summary using Text-Rank Algorithm: GET /assignment/[aid]/rubric/[rid]/comments/summary' \
+           '\n	3. To change the length of the summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]' \
+           '\n	4. To change the algorithm and length of summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]/[algorithm]' \
+           '\n	5. To get a direct summary from an input POST to /summary the following input example: ' \
+           '\n		{ "length":5, "algorithm":"TextRank", "sentences":[' \
+	   '\n			{"sentence":"sentence 1"}, ' \
+	   '\n			{"sentence":"sentence 2"},' \
+	   '\n		]}' \
+	   '\n</pre>'
 
 
 @app.route('/assignment/<aid>/rubric/<rid>/comments', methods=['POST'])

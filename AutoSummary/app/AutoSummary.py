@@ -147,7 +147,7 @@ def get_summary_base(aid, rid, length=10, algorithm="TextRank"):
                 corpus = ". ".join([item[2] for item in row])
                 summary = summarize(corpus, length, algorithm)
                 return jsonify(Summary=summary)
-         else:
+        else:
             return jsonify(Exception="Assignment ID and Rubric ID cannot be negative")
     else:
         return jsonify(Exception="Assignment ID and Rubric ID must be a number")

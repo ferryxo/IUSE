@@ -135,7 +135,7 @@ def get_summary_generic():
 def get_summary_base(aid, rid, length=10, algorithm="TextRank"):
     if aid.isdigit and rid.isdigit:
         if int(aid) >= 0 and int(rid) >= 0:
-            sql = 'SELECT reviewer_id, grade, content ' \
+            sql = 'SELECT DISTINCT content ' \
                   'FROM Comment ' \
                   'WHERE assignment_id=' + aid + " AND rubric_id=" + rid
             cur.execute(sql)
@@ -143,8 +143,7 @@ def get_summary_base(aid, rid, length=10, algorithm="TextRank"):
             if len(row) == 0 :
                 return jsonify(Summary="Empty")
             else:
-                # comments= [{"reviewer":item[0], "grade":item[1], "content":item[2]} for item in row]
-                corpus = ". ".join([item[2] for item in row])
+                corpus = ". ".join([item[0] for item in row])
                 summary = summarize(corpus, length, algorithm)
                 return jsonify(Summary=summary)
         else:

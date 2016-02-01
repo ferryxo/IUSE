@@ -55,17 +55,17 @@ def hello_world():
         return '<pre>' \
 	    '\nThis is a web service for summarizing a collection of peer-review sentences.'\
 	    '\nIt uses sumy library which support 7 different algorithms to extract the most important sentences in a text corpus.'\
-	    '\n   Usage: ' \
-        '\n	  1. POST each comment to /assignment/[aid]/rubric/[rid]/comments' \
-        '\n	    Input example : {"comments":[ ' \
+	    '\nUsage: ' \
+        '\n	    1. POST each comment to /assignment/[aid]/rubric/[rid]/comments' \
+        '\n	        Input example : {"comments":[ ' \
 	    '\n  			{"reviewer":"01","content":"abcd"},' \
         '\n				{"reviewer":"02","content":"sssss"}' \
 	    '\n			]}' \
-        '\n	  2. Then to retrieve the summary using Text-Rank Algorithm: GET /assignment/[aid]/rubric/[rid]/comments/summary' \
-        '\n	  3. To change the length of the summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]' \
-        '\n	  4. To change the algorithm and length of summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]/[algorithm]' \
+        '\n     2. Then to retrieve the summary using Text-Rank Algorithm: GET /assignment/[aid]/rubric/[rid]/comments/summary' \
+        '\n     3. To change the length of the summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]' \
+        '\n     4. To change the algorithm and length of summary: GET /assignment/[aid]/rubric/[rid]/comments/summary/[length]/[algorithm]' \
         '\n	        where algorithm one of these : textrank, lexrank, luhn, edmonson*, kl, lsa, sumbasic, random (* doesn\'t work yet)' \
-        '\n	  5. To get a direct summary from an input POST to /summary the following input example: ' \
+        '\n     5. To get a direct summary from an input POST to /summary the following input example: ' \
         '\n		    { "length":5, "algorithm":"TextRank", "sentences":[' \
 	    '\n			    {"sentence":"sentence 1"}, ' \
 	    '\n			    {"sentence":"sentence 2"},' \
